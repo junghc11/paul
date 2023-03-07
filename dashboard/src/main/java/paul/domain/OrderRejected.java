@@ -8,7 +8,6 @@ import java.util.*;
 @Data
 public class OrderRejected extends AbstractEvent {
 
-    private Long id;
     private Long customerid;
     private Long cafeId;
     private Long menuId;
@@ -16,4 +15,5 @@ public class OrderRejected extends AbstractEvent {
     private Date orderDate;
     private String status;
     private Long orderId;
+    private Long cafeOrderId;
 }
