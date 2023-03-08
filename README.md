@@ -70,7 +70,7 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 
 
 [이벤트 발행 확인]
-![image](https://user-images.githubusercontent.com/74826215/223603384-0ff9116a-beb7-44ed-9d60-330a85609c6b.png)
+![image](https://user-images.githubusercontent.com/20621385/223639563-a40868e6-a78f-4f5f-93bd-9a2dd86856dd.png)
 
 
 [주문내역(café repository) 확인]
