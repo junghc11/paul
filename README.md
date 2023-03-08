@@ -69,7 +69,7 @@ spec:
               cpu: "200m"
           readinessProbe:
             httpGet:
-              path: '/actuator/health'
+              path: '/actuator/health'  
               port: 8080
             initialDelaySeconds: 20
             timeoutSeconds: 2
