@@ -66,7 +66,7 @@ StartPayment 작업은 Paid 이벤트를 발행하고, Café 서비스에서 Pai
 Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발행되며, 주문 이력이 cafe repository에 저장되는 것을 확인할 수 있다.
 
 [주문 요청]
-![image](https://user-images.githubusercontent.com/74826215/223603363-8de0a839-df63-4150-82aa-f01f20d2427e.png)
+![image](https://user-images.githubusercontent.com/20621385/223639377-45d8dcb4-f0eb-46d1-98d1-8a89ed1fafe1.png)
 
 
 [이벤트 발행 확인]
@@ -74,7 +74,7 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 
 
 [주문내역(café repository) 확인]
-![image](https://user-images.githubusercontent.com/74826215/223603397-5be2659c-40b3-408d-b0f8-c73a016f16ae.png)
+![image](https://user-images.githubusercontent.com/20621385/223639203-2c7a71ca-bf97-4995-8bac-3da725d8a95c.png)
 
 
 ## CQRS  
