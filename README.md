@@ -193,11 +193,12 @@ spec:
 
 
 ## Self-healing (liveness probe)
-Order 컨테이너에 장애가 생겼을 때, 컨테이너 플랫폼이 자동으로 장애를 감지하여 복구하도록 설정
-컨테이너 플랫폼이 각 마이크로서비스들의 Healthy 여부를 체크하는 Probe Action 중, Command Type과 HttpGet Type을 적용
+- Order 컨테이너에 장애가 생겼을 때, 컨테이너 플랫폼이 자동으로 장애를 감지하여 복구하도록 설정
+  컨테이너 플랫폼이 각 마이크로서비스들의 Healthy 여부를 체크하는 Probe Action 중, Command Type과 HttpGet Type을 적용
 
 - Command ProbeAction
   Command type의 Probe Action이 설정된 YAML을 배포
+  
 ```
 kubectl apply -f - <<EOF
 apiVersion: v1
@@ -289,12 +290,6 @@ Events:
   Warning  BackOff  4m2s (x3205 over 16h)  kubelet  Back-off restarting failed container
 ```
 
-- HttpGet ProbeAction
-HttpGet type의 Probe Action이 설정된 주문 마이크로서비스 배포
-
-```
-kubectl apply -f https://raw.githubusercontent.com/acmexii/demo/master/edu/order-liveness.yaml
-```
 
 배포된 주문서비스에 대해 라우터를 생성
 
@@ -304,57 +299,6 @@ kubectl get svc
 ```                         
 
 
-
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: order
-  labels:
-    app: order
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: order
-  template:
-    metadata:
-      labels:
-        app: order
-    spec:
-      containers:
-        - name: order
-          image: sjjo0319/order:230307
-          ports:
-            - containerPort: 8080
-          resources:
-            requests:
-              cpu: "200m"
-          readinessProbe:
-            httpGet:
-              path: '/actuator/health'
-              port: 8080
-            initialDelaySeconds: 20
-            timeoutSeconds: 2
-            periodSeconds: 5
-            failureThreshold: 10 
-          livenessProbe:    /// livenessProbe 설정
-            httpGet:
-              path: '/actuator/health'
-              port: 8080
-            initialDelaySeconds: 30
-            timeoutSeconds: 2
-            successThreshold: 1
-            periodSeconds: 1
-            failureThreshold: 5
-          volumeMounts:
-          - mountPath: "/mnt/data"
-            name: volume
-      volumes:
-        - name: volume
-          persistentVolumeClaim:
-            claimName: aws-efs
-```
 - Liveness Probe를 확인합니다
 ![image](https://user-images.githubusercontent.com/74826215/223605978-3477d637-33cf-48fd-9335-fce7eab138c0.png)
 
