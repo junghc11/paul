@@ -4,7 +4,7 @@
 # 예제 - 모바일 음료주문
 
 
-시나리오
+## 시나리오
  [기능적 요구사항]
 1. 고객이 모바일 앱을 통해 지점, 메뉴를 선택한다
 1. 고객이 선택한 메뉴에 대해 결제함으로써 주문이 발생한다.
@@ -27,6 +27,11 @@
 1. 장애격리
    1. 상점관리 기능이 수행되지 않더라도 주문은 365일 24시간 받을 수 있어야 한다 Async (event-driven), Eventual Consistency
    1. 고객이 자주 상점관리에서 확인할 수 있는 배달상태를 주문시스템(프론트엔드)에서 확인할 수 있어야 한다 CQRS
+
+## Event Storming 결과  
+   MSAEz 로 모델링한 이벤트스토밍 결과:   
+   https://labs.msaez.io/#/storming/fc605fea1fa7b66445d0a7dff5f51e34   
+   ![image](https://user-images.githubusercontent.com/121933672/223629043-bf4842c4-dadc-4b23-a3c9-ce44fc8a6207.png)
 
 
 ## 체크포인트
@@ -69,9 +74,89 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 
 ## Compensation & Correlation  
 
+
 ## Gateway
 
+
 ## Deploy
+```
+cd order
+mvn package -B -Dmaven.test.skip=true
+java -jar target/order-0.0.1-SNAPSHOT.jar
+```
+
+- 작성한 패키징을 도커라이징 시킨다. 
+
+```
+docker login
+docker build -t sjjo0319/order:230307 .     
+docker images
+docker push sjjo0319/order:230307 
+```
+
+- 생성된 이미지를 yaml 이용하여 K8S에  Deploy 한다
+```
+kubectl apply -f kubernetes/deployment.yaml
+kubectl apply -f kubernetes/service.yaml
+```
+
+- Order(주문서비스)의 Deployment.yaml 
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          image: sjjo0319/order:230307
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "200m"
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 20
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10 
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 2
+            successThreshold: 1
+            periodSeconds: 1
+            failureThreshold: 5
+          volumeMounts:
+          - mountPath: "/mnt/data"
+            name: volume
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: aws-efs
+```            
+
+- Order Command를 요청하고 상태를 확인한다. 
+
+![image](https://user-images.githubusercontent.com/74826215/223631433-1229defe-e873-46a4-a7b5-3714e7d73447.png)
+
+
 
 
 ## Autoscale (HPA)
