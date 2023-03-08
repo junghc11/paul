@@ -70,7 +70,11 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 
 
 ## Gateway
+게이트웨이 실행하고, 진입점 확인
+![image](https://user-images.githubusercontent.com/20621385/223633412-19b70064-5128-4c9b-b3a2-e31f1804c7a1.png)
 
+external ip로 명령 실행
+![image](https://user-images.githubusercontent.com/20621385/223634353-4013b62e-546a-4653-b815-4c073d14f06c.png)
 
 ## Deploy
 ```
