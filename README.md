@@ -193,7 +193,118 @@ spec:
 
 
 ## Self-healing (liveness probe)
-Order 컨테이너에 장애가 생겼을 때, 컨테이너 플랫폼이 자동으로 장애를 감지하여 복구하도록 설정합니다.
+Order 컨테이너에 장애가 생겼을 때, 컨테이너 플랫폼이 자동으로 장애를 감지하여 복구하도록 설정
+컨테이너 플랫폼이 각 마이크로서비스들의 Healthy 여부를 체크하는 Probe Action 중, Command Type과 HttpGet Type을 적용
+
+- Command ProbeAction
+  Command type의 Probe Action이 설정된 YAML을 배포
+```
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-exec
+spec:
+  containers:
+  - name: liveness
+    image: k8s.gcr.io/busybox
+    args:
+    - /bin/sh
+    - -c
+    - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5
+EOF			
+```
+
+- 컨테이너가 Running 상태로 보이나, Probe Configuration에 따라 Liveness Probe 실패
+  kubectl describe 커맨드로 Pod 이벤트의 메시지 변화를 확인
+
+```
+gitpod /workspace/paul (main) $ kubectl describe po liveness-exec
+Name:             liveness-exec
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             ip-192-168-7-157.eu-central-1.compute.internal/192.168.7.157
+Start Time:       Tue, 07 Mar 2023 14:28:56 +0000
+Labels:           test=liveness
+Annotations:      kubernetes.io/psp: eks.privileged
+Status:           Running
+IP:               192.168.30.171
+IPs:
+  IP:  192.168.30.171
+Containers:
+  liveness:
+    Container ID:  docker://8e0184df645dcf2b8c3da455bc355ba9b7cade6ffabb858f6eb2a1b6992def99
+    Image:         k8s.gcr.io/busybox
+    Image ID:      docker-pullable://k8s.gcr.io/busybox@sha256:d8d3bc2c183ed2f9f10e7258f84971202325ee6011ba137112e01e30f206de67
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      /bin/sh
+      -c
+      touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+    State:          Waiting
+      Reason:       CrashLoopBackOff
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    137
+      Started:      Wed, 08 Mar 2023 06:50:33 +0000
+      Finished:     Wed, 08 Mar 2023 06:51:47 +0000
+    Ready:          False
+    Restart Count:  263
+    Liveness:       exec [cat /tmp/healthy] delay=5s timeout=1s period=5s #success=1 #failure=3
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-7p4hr (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             False 
+  ContainersReady   False 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-7p4hr:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason   Age                    From     Message
+  ----     ------   ----                   ----     -------
+  Normal   Pulling  33m (x255 over 16h)    kubelet  Pulling image "k8s.gcr.io/busybox"
+  Warning  BackOff  4m2s (x3205 over 16h)  kubelet  Back-off restarting failed container
+```
+
+- HttpGet ProbeAction
+HttpGet type의 Probe Action이 설정된 주문 마이크로서비스 배포
+
+```
+kubectl apply -f https://raw.githubusercontent.com/acmexii/demo/master/edu/order-liveness.yaml
+```
+
+배포된 주문서비스에 대해 라우터를 생성
+
+```
+kubectl expose deploy order --type=LoadBalancer --port=8080
+kubectl get svc
+```                         
+
+
+
 ```
 apiVersion: apps/v1
 kind: Deployment
@@ -227,7 +338,7 @@ spec:
             timeoutSeconds: 2
             periodSeconds: 5
             failureThreshold: 10 
-          livenessProbe:
+          livenessProbe:    /// livenessProbe 설정
             httpGet:
               path: '/actuator/health'
               port: 8080
@@ -246,8 +357,6 @@ spec:
 ```
 - Liveness Probe를 확인합니다
 ![image](https://user-images.githubusercontent.com/74826215/223605978-3477d637-33cf-48fd-9335-fce7eab138c0.png)
-
-
 
 
 
