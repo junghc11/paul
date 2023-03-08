@@ -67,7 +67,7 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
  
 주문 요청 후 CQRS에 정의된 내용에 따라 주문/배달 상태가 변경되었음
 
-## Coimpensation & Correlation  
+## Compensation & Correlation  
 
 ## Gateway
 
@@ -75,8 +75,27 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 
 ## Autoscale (HPA)
 
-## Zero-downtime deploy (Readiness probe)
 
+## Zero-downtime deploy (Readiness probe)
+- seige 로 배포작업 직전에 워크로드를 모니터링 함.
+![image](https://user-images.githubusercontent.com/121846555/223623164-401cb0c6-83e6-4775-ae04-22be46a768ea.png)
+
+-	Readiness probe 적용 전
+
+    ![image](https://user-images.githubusercontent.com/121846555/223623199-4515f93f-1f1d-4f88-921e-74849aba60da.png)
+
+    : Availability가 100% 미만으로 떨어졌으므로 정지시간이 발생한 것이 확인됨.
+
+-	Readiness probe 설정 (deployment.yaml)
+
+    ![image](https://user-images.githubusercontent.com/121846555/223623216-b85b9343-3a6d-4b1d-868c-b78d1fc141a9.png)
+
+- 수정된 주문 서비스 배포
+![image](https://user-images.githubusercontent.com/121846555/223623236-8d8d7821-62e6-400f-8e22-c718bcd383d3.png)
+
+    ![image](https://user-images.githubusercontent.com/121846555/223623251-aa3d4763-3926-4fbf-8b33-5a49b36b982a.png) 
+
+    : 배포기간 동안 Availability의 변화가 없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
 ## Persistence Volume/ConfigMap/Secret  
   EFS (Elastic File System) 사용을 위한 설정
