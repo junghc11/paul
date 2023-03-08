@@ -35,6 +35,32 @@
 
 
 ## 체크포인트
+## Persistence Volume/ConfigMap/Secret  
+  EFS (Elastic File System) 사용을 위한 설정
+  - Step. 1: EFS 생성 
+    ![image](https://user-images.githubusercontent.com/121933672/223619655-38b0a7c7-d6cc-4d75-816d-9cdcd55ffc0f.png)
+    ![image](https://user-images.githubusercontent.com/121933672/223619692-0fff160c-df69-4d84-bf55-35ad34b6241a.png)
+
+  - Step. 2: EFS계정 생성 및 Role 바인딩 
+     ServerAccount 생성   
+     서비스 계정(efs-provisioner)에 권한(rbac) 설정   
+
+  - Step. 3: EFS Provisioner 설치   
+     efs-provisioner.yaml 편집하여 EKS에 EFS 프로비저너 설치  
+        value: # fs-0955d6fce0c755475 => 파일 시스템 ID  
+        value: # eu-central-1 => EKS 리전  
+        server:# fs-0955d6fce0c755475.efs.eu-central-1.amazonaws.com => 파일 시스템 ID  
+        ![image](https://user-images.githubusercontent.com/121933672/223622035-238f0a8d-afa3-4ab7-b64d-406339bdcf13.png)
+
+  - Step. 4: StorageClass 생성 
+        ![image](https://user-images.githubusercontent.com/121933672/223622305-4976882b-0b5e-4798-8e21-79a1113f6f1d.png)
+
+  - Step. 5: PVC 생성   
+    ![image](https://user-images.githubusercontent.com/121933672/223622259-9912f848-a9a1-48bc-a11f-d9df95989d72.png)
+    정상적으로 mount되었는지 확인   
+    ![image](https://user-images.githubusercontent.com/121933672/223622343-5a5300d9-327a-46d1-aa39-3bb594396a16.png)
+
+
 
 ## Saga (Pub-Sub)  
 Order 서비스에서 OrderPlaced 이벤트를 발행하면, Payment 서비스에서 OrderPlaced 이벤트를 수신하여 StartPayment 작업을 실행한다. 
@@ -75,6 +101,20 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 
 external ip로 명령 실행
 ![image](https://user-images.githubusercontent.com/20621385/223634353-4013b62e-546a-4653-b815-4c073d14f06c.png)
+
+
+
+## Autoscale (HPA)
+- 주문 요청이 많아질 경우 order pod를 확장하여 요청을 처리한다.
+
+siege pod를 생성하여 부하 테스트
+- siege -c20 -t40S -v http://order:8080/orders
+![image](https://user-images.githubusercontent.com/20621385/223629663-bec2c789-2b56-4a97-a942-b53f9f887be3.png)
+![image](https://user-images.githubusercontent.com/20621385/223630157-568f99f5-e1e7-4a81-9f67-c77d1b421453.png)
+
+pod 생성 확인
+![image](https://user-images.githubusercontent.com/20621385/223629217-e10a0e74-07d8-4c63-8f44-b003ce96e01f.png)
+
 
 ## Deploy
 ```
@@ -155,69 +195,6 @@ spec:
 ![image](https://user-images.githubusercontent.com/74826215/223631433-1229defe-e873-46a4-a7b5-3714e7d73447.png)
 
 
-
-
-## Autoscale (HPA)
-- 주문 요청이 많아질 경우 order pod를 확장하여 요청을 처리한다.
-
-siege pod를 생성하여 부하 테스트
-- siege -c20 -t40S -v http://order:8080/orders
-![image](https://user-images.githubusercontent.com/20621385/223629663-bec2c789-2b56-4a97-a942-b53f9f887be3.png)
-![image](https://user-images.githubusercontent.com/20621385/223630157-568f99f5-e1e7-4a81-9f67-c77d1b421453.png)
-
-pod 생성 확인
-![image](https://user-images.githubusercontent.com/20621385/223629217-e10a0e74-07d8-4c63-8f44-b003ce96e01f.png)
-
-
-
-## Zero-downtime deploy (Readiness probe)
-- seige 로 배포작업 직전에 워크로드를 모니터링 함.
-![image](https://user-images.githubusercontent.com/121846555/223623164-401cb0c6-83e6-4775-ae04-22be46a768ea.png)
-
--	Readiness probe 적용 전
-
-    ![image](https://user-images.githubusercontent.com/121846555/223623199-4515f93f-1f1d-4f88-921e-74849aba60da.png)
-
-    : Availability가 100% 미만으로 떨어졌으므로 정지시간이 발생한 것이 확인됨.
-
--	Readiness probe 설정 (deployment.yaml)
-
-    ![image](https://user-images.githubusercontent.com/121846555/223623216-b85b9343-3a6d-4b1d-868c-b78d1fc141a9.png)
-
-- 수정된 주문 서비스 배포
-![image](https://user-images.githubusercontent.com/121846555/223623236-8d8d7821-62e6-400f-8e22-c718bcd383d3.png)
-
-    ![image](https://user-images.githubusercontent.com/121846555/223623251-aa3d4763-3926-4fbf-8b33-5a49b36b982a.png) 
-
-    : 배포기간 동안 Availability의 변화가 없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
-
-## Persistence Volume/ConfigMap/Secret  
-  EFS (Elastic File System) 사용을 위한 설정
-  - Step. 1: EFS 생성 
-    ![image](https://user-images.githubusercontent.com/121933672/223619655-38b0a7c7-d6cc-4d75-816d-9cdcd55ffc0f.png)
-    ![image](https://user-images.githubusercontent.com/121933672/223619692-0fff160c-df69-4d84-bf55-35ad34b6241a.png)
-
-  - Step. 2: EFS계정 생성 및 Role 바인딩 
-     ServerAccount 생성   
-     서비스 계정(efs-provisioner)에 권한(rbac) 설정   
-
-  - Step. 3: EFS Provisioner 설치   
-     efs-provisioner.yaml 편집하여 EKS에 EFS 프로비저너 설치  
-        value: # fs-0955d6fce0c755475 => 파일 시스템 ID  
-        value: # eu-central-1 => EKS 리전  
-        server:# fs-0955d6fce0c755475.efs.eu-central-1.amazonaws.com => 파일 시스템 ID  
-        ![image](https://user-images.githubusercontent.com/121933672/223622035-238f0a8d-afa3-4ab7-b64d-406339bdcf13.png)
-
-  - Step. 4: StorageClass 생성 
-        ![image](https://user-images.githubusercontent.com/121933672/223622305-4976882b-0b5e-4798-8e21-79a1113f6f1d.png)
-
-  - Step. 5: PVC 생성   
-    ![image](https://user-images.githubusercontent.com/121933672/223622259-9912f848-a9a1-48bc-a11f-d9df95989d72.png)
-    정상적으로 mount되었는지 확인   
-    ![image](https://user-images.githubusercontent.com/121933672/223622343-5a5300d9-327a-46d1-aa39-3bb594396a16.png)
-
-
-
 ## Self-healing (liveness probe)
 Order 컨테이너에 장애가 생겼을 때, 컨테이너 플랫폼이 자동으로 장애를 감지하여 복구하도록 설정합니다.
 ```
@@ -287,6 +264,31 @@ spec:
 - istio를 설치하고 각 Pod에 SideCar를 Inject 합니다.
 사용자 트래픽의 흐름이나 설정된 istio 구성요소들의 동작 상황을 실시간 감지하여 그래픽을 통해 모니터링 합니다.
 ![image](https://user-images.githubusercontent.com/74826215/223606246-b0439666-50d2-467d-b4f7-ddd83d6c8f36.png)
+
+
+
+
+## Zero-downtime deploy (Readiness probe)
+- seige 로 배포작업 직전에 워크로드를 모니터링 함.
+![image](https://user-images.githubusercontent.com/121846555/223623164-401cb0c6-83e6-4775-ae04-22be46a768ea.png)
+
+-	Readiness probe 적용 전
+
+    ![image](https://user-images.githubusercontent.com/121846555/223623199-4515f93f-1f1d-4f88-921e-74849aba60da.png)
+
+    : Availability가 100% 미만으로 떨어졌으므로 정지시간이 발생한 것이 확인됨.
+
+-	Readiness probe 설정 (deployment.yaml)
+
+    ![image](https://user-images.githubusercontent.com/121846555/223623216-b85b9343-3a6d-4b1d-868c-b78d1fc141a9.png)
+
+- 수정된 주문 서비스 배포
+![image](https://user-images.githubusercontent.com/121846555/223623236-8d8d7821-62e6-400f-8e22-c718bcd383d3.png)
+
+    ![image](https://user-images.githubusercontent.com/121846555/223623251-aa3d4763-3926-4fbf-8b33-5a49b36b982a.png) 
+
+    : 배포기간 동안 Availability의 변화가 없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
+
 
 
 
