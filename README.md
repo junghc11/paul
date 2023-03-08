@@ -178,3 +178,19 @@ spec:
 
 
 Loggregation / Monitoring
+13. Loggregation / Monitoring
+- 로그를 모니터링하기위해 Kibana 설치하여 LoadBalancer 타입 확인.
+  ![image](https://user-images.githubusercontent.com/121846555/223625288-ed056165-1e71-42ad-a18f-f336f5e6aacd.png)
+
+- 접속 주소: 
+  http://a92298cab2ac94027be92659f08c9479-2039032239.eu-central-1.elb.amazonaws.com:5601
+
+- Kibana Web Admin의 Analytics > Discover에 접속하여 로그 조회
+  ![image](https://user-images.githubusercontent.com/121846555/223625313-441c7ff1-2303-4a6d-87bc-8f62dd959680.png)
+
+  : 전체 로그가 조회됨.
+
+-	‘Add filter’에서 'kubernetes.container_name is order’로 조건을 지정
+  ![image](https://user-images.githubusercontent.com/121846555/223625343-59d8559f-b080-4b48-8b75-c377ae17cca7.png)
+
+  : 지정한 조건의 로그만 조회됨.
