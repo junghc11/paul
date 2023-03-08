@@ -37,8 +37,7 @@
   ![image](https://user-images.githubusercontent.com/487999/79684159-3543c700-826a-11ea-8d5f-a3fc0c4cad87.png)
 
 
-
-1. Saga (Pub-Sub)
+## Saga (Pub-Sub)  
 Order 서비스에서 OrderPlaced 이벤트를 발행하면, Payment 서비스에서 OrderPlaced 이벤트를 수신하여 StartPayment 작업을 실행한다. 
 StartPayment 작업은 Paid 이벤트를 발행하고, Café 서비스에서 Paid 이벤트를 수신하여 AddCafeOrder 작업을 실행한다.
 
@@ -56,7 +55,7 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 ![image](https://user-images.githubusercontent.com/74826215/223603397-5be2659c-40b3-408d-b0f8-c73a016f16ae.png)
 
 
-2. CQRS
+## CQRS  
 주문 및 배달 현황을 확인할 수 있는 마이페이지 서비스를 위해 Read Model 생성
 [MyPage]
  ![image](https://user-images.githubusercontent.com/74826215/223603407-2bf0968e-ce03-457e-84dc-feb7a10c86a5.png)
@@ -68,16 +67,16 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
  
 주문 요청 후 CQRS에 정의된 내용에 따라 주문/배달 상태가 변경되었음
 
-3. 
-CQRS
-Compensation & Correlation
-Request-Response (Not implemented)
-Circuit Breaker (Not implemented)
-Gateway / Ingress
-Deploy / Pipeline
-Autoscale (HPA)
-Zero-downtime deploy (Readiness probe)
-Persistence Volume/ConfigMap/Secret
+## Coimpensation & Correlation  
+
+## Gateway
+
+## Deploy
+
+## Autoscale (HPA)
+
+## Zero-downtime deploy (Readiness probe)
+
 
 ## Persistence Volume/ConfigMap/Secret  
   EFS (Elastic File System) 사용을 위한 설정
@@ -177,8 +176,9 @@ spec:
 ![image](https://user-images.githubusercontent.com/74826215/223606246-b0439666-50d2-467d-b4f7-ddd83d6c8f36.png)
 
 
-Loggregation / Monitoring
-13. Loggregation / Monitoring
+
+## Loggreagation / Monitoring
+
 - 로그를 모니터링하기위해 Kibana 설치하여 LoadBalancer 타입 확인.
   ![image](https://user-images.githubusercontent.com/121846555/223625288-ed056165-1e71-42ad-a18f-f336f5e6aacd.png)
 
