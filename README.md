@@ -102,14 +102,14 @@ external ip로 명령 실행
 
 
 ## Autoscale (HPA)
-- 주문 요청이 많아질 경우 order pod를 확장하여 요청을 처리한다.
+주문 요청이 많아질 경우 order pod를 확장하여 요청을 처리한다.
 
-siege pod를 생성하여 부하 테스트
+- siege pod를 생성하여 부하 테스트
 - siege -c20 -t40S -v http://order:8080/orders
 ![image](https://user-images.githubusercontent.com/20621385/223629663-bec2c789-2b56-4a97-a942-b53f9f887be3.png)
 ![image](https://user-images.githubusercontent.com/20621385/223630157-568f99f5-e1e7-4a81-9f67-c77d1b421453.png)
 
-pod 생성 확인
+- pod 생성 확인
 ![image](https://user-images.githubusercontent.com/20621385/223629217-e10a0e74-07d8-4c63-8f44-b003ce96e01f.png)
 
 
