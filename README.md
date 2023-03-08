@@ -73,6 +73,85 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 
 ## Deploy
 
+```
+cd order
+mvn package -B -Dmaven.test.skip=true
+
+java -jar target/order-0.0.1-SNAPSHOT.jar
+```
+
+- 작성한 패키징을 도커라이징 시킨다. 
+
+```
+docker login
+docker build -t sjjo0319/order:230307 .     
+docker images
+docker push sjjo0319/order:230307 
+```
+
+- 생성된 이미지를 yaml 이용하여 K8S에  Deploy 한다
+```
+kubectl apply -f kubernetes/deployment.yaml
+kubectl apply -f kubernetes/service.yaml
+```
+
+- Order(주문서비스)의 Deployment.yaml 
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          image: sjjo0319/order:230307
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "200m"
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 20
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10 
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 2
+            successThreshold: 1
+            periodSeconds: 1
+            failureThreshold: 5
+          volumeMounts:
+          - mountPath: "/mnt/data"
+            name: volume
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: aws-efs
+```            
+
+- Order Command를 요청하고 상태를 확인한다. 
+
+![image](https://user-images.githubusercontent.com/74826215/223631433-1229defe-e873-46a4-a7b5-3714e7d73447.png)
+
+
 
 ## Autoscale (HPA)
 - 주문 요청이 많아질 경우 order pod를 확장하여 요청을 처리한다.
