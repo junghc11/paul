@@ -29,7 +29,6 @@ Order 서비스를 호출하여 주문 요청시 OrderPlaced, Paid 토픽이 발
 주문 요청 후 CQRS에 정의된 내용에 따라 주문/배달 상태가 변경되었음
 
 3. 
-
 CQRS
 Compensation & Correlation
 Request-Response (Not implemented)
@@ -39,6 +38,77 @@ Deploy / Pipeline
 Autoscale (HPA)
 Zero-downtime deploy (Readiness probe)
 Persistence Volume/ConfigMap/Secret
-Self-healing (liveness probe)
-Apply Service Mesh
+
+
+## Self-healing (liveness probe)
+Order 컨테이너에 장애가 생겼을 때, 컨테이너 플랫폼이 자동으로 장애를 감지하여 복구하도록 설정합니다.
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          image: sjjo0319/order:230307
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "200m"
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 20
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10 
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 2
+            successThreshold: 1
+            periodSeconds: 1
+            failureThreshold: 5
+          volumeMounts:
+          - mountPath: "/mnt/data"
+            name: volume
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: aws-efs
+```
+- Liveness Probe를 확인합니다
+![image](https://user-images.githubusercontent.com/74826215/223605978-3477d637-33cf-48fd-9335-fce7eab138c0.png)
+
+
+
+
+
+## Apply Service Mesh
+
+- istio를 설치하고 Kiali와 Jaeger를 기동합니다.
+![image](https://user-images.githubusercontent.com/74826215/223606436-1c516913-2edb-434f-a589-0743df206b5d.png)
+![image](https://user-images.githubusercontent.com/74826215/223606536-fb1bc43d-0c61-4185-be05-039ca0ec825a.png)
+
+
+- istio를 설치하고 각 Pod에 SideCar를 Inject 합니다.
+사용자 트래픽의 흐름이나 설정된 istio 구성요소들의 동작 상황을 실시간 감지하여 그래픽을 통해 모니터링 합니다.
+![image](https://user-images.githubusercontent.com/74826215/223606246-b0439666-50d2-467d-b4f7-ddd83d6c8f36.png)
+
+
 Loggregation / Monitoring
